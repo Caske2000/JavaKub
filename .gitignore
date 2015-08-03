@@ -1,1 +1,4 @@
-# TODO Fix This
+# IntelliJ
+/.idea
+/out
+*.iml
