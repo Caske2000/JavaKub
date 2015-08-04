@@ -1,5 +1,7 @@
 package com.caske2000.javakub.game;
 
+import java.awt.*;
+
 /**
  * Created by Caske2000 on 04/08/2015.
  */
@@ -12,6 +14,8 @@ public class Tile
     {
         if (number <= 0 || number > 13)
             throw new IndexOutOfBoundsException("Your number is out of bounds, number found: " + number);
+        if (color != Color.BLACK && color != Color.BLUE && color != Color.RED && color != Color.ORANGE)
+            throw new IndexOutOfBoundsException("This color does not exist in the game, color found: " + color);
         this.color = color;
         this.number = number;
     }
@@ -24,9 +28,5 @@ public class Tile
     public int getNumber()
     {
         return number;
-    }
-
-    public enum Color{
-        RED, BLACK, ORANGE, BLUE
     }
 }

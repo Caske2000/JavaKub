@@ -3,6 +3,11 @@ package com.caske2000.javakub;
 import com.caske2000.javakub.game.Rules;
 import com.caske2000.javakub.game.Tile;
 
+import javax.swing.*;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,46 +19,33 @@ public class Display extends Canvas
 {
     private List<Tile> tileGroup1 = new ArrayList<>();
 
-    public Display(Window window)
+    public Display()
     {
-        setBounds(0, 0, window.WIDTH, window.HEIGHT);
-
         System.out.println(Rules.checkValidGroup(tileGroup1));
+        tileGroup1.add(new Tile(Color.ORANGE, 2));
+        tileGroup1.add(new Tile(Color.BLACK, 2));
+        tileGroup1.add(new Tile(Color.BLUE, 2));
+        tileGroup1.add(new Tile(Color.RED, 2));
     }
 
-    public void render(Graphics g)
+    public void render(DefaultListModel model, JTextPane textTiles)
     {
-        // RENDER STUFF
-        g.setFont(new Font("TimesRoman", Font.PLAIN, 25));
-        int y = 20;
-        for (Tile tile : tileGroup1)
+        for (Tile tile: tileGroup1)
         {
-            if (tile != null)
-            {
-                drawTile(g, tile.getColor(), 5, y, tile.getNumber());
-                y += 25;
-            }
+            model.addElement("Color: " + tile.getColor());
         }
-        // RENDER END
     }
 
-    public void drawTile(Graphics g, Tile.Color color, int x, int y, int number)
-    {
-        switch (color)
-        {
-            case RED:
-                g.setColor(Color.RED);
-                break;
-            case BLACK:
-                g.setColor(Color.BLACK);
-                break;
-            case ORANGE:
-                g.setColor(Color.ORANGE);
-                break;
-            case BLUE:
-                g.setColor(Color.BLUE);
-                break;
-        }
-        g.drawString(Integer.toString(number), x, y);
+    public void append(JTextPane tp, String s, Color c) { // better implementation--uses
+        // StyleContext
+        StyleContext sc = StyleContext.getDefaultStyleContext();
+        AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY,
+                StyleConstants.Foreground, c);
+
+        int len = tp.getDocument().getLength(); // same value as
+        // getText().length();
+        tp.setCaretPosition(len); // place caret at the end (with no selection)
+        tp.setCharacterAttributes(aset, false);
+        tp.replaceSelection(s); // there is no selection, so inserts at caret
     }
 }

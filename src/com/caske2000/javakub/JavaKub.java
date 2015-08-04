@@ -2,21 +2,27 @@ package com.caske2000.javakub;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by Caske2000 on 03/08/2015.
  */
 public class JavaKub extends JFrame
 {
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss");
     private static final String TITLE = "JavaKub - PreAlpha";
     private static JavaKub instance;
+    private Display display;
 
-    //TODO Change and fix this
-    private JTextPane console;
-    private JList groups;
+    private JTextArea console;
+    private DefaultListModel model = new DefaultListModel();
+    private JList listGroups;
 
     private JTextField fieldInput;
-    private JButton groupBtn;
+    private JButton addGroupBtn;
     private JTextPane textTiles;
 
     public JavaKub()
@@ -32,37 +38,75 @@ public class JavaKub extends JFrame
 
     private void createView()
     {
-        JPanel panel = new JPanel();
-        getContentPane().add(panel);
+        JTabbedPane tabbedPane = new JTabbedPane();
+        getContentPane().add(tabbedPane);
 
+        tabbedPane.add("Game Area", createGameArea());
+        tabbedPane.add("Console", createConsoleArea());
+    }
+
+    private JPanel createGameArea()
+    {
+        this.display = new Display();
+
+        JPanel panel = new JPanel(new BorderLayout());
         panel.setLayout(new BorderLayout());
 
-        console = new JTextPane();
-        console.setEditable(false);
-        JScrollPane consoleSP = new JScrollPane(console);
-        consoleSP.setPreferredSize(new Dimension(this.getWidth() - 200, 100));
-        consoleSP.setBorder(BorderFactory.createTitledBorder("Console Output"));
-        panel.add(consoleSP, BorderLayout.SOUTH);
-
-        JPanel groupPanel = new JPanel(new BorderLayout());
-        groups = new JList();
-        JScrollPane listGroupsSP = new JScrollPane(groups);
+        listGroups = new JList(model);
+        JScrollPane listGroupsSP = new JScrollPane(listGroups);
         listGroupsSP.setPreferredSize(new Dimension(200, 0));
         listGroupsSP.setBorder(BorderFactory.createTitledBorder("Groups"));
-        groupPanel.add(listGroupsSP, BorderLayout.CENTER);
+        panel.add(listGroupsSP, BorderLayout.EAST);
 
+        JPanel panelInput = new JPanel(new BorderLayout());
         fieldInput = new JTextField();
         fieldInput.setBorder(BorderFactory.createTitledBorder("Input"));
-        fieldInput.setPreferredSize(new Dimension(0, 50));
-        groupPanel.add(fieldInput, BorderLayout.SOUTH);
+        panelInput.add(fieldInput, BorderLayout.CENTER);
 
-        panel.add(groupPanel, BorderLayout.EAST);
+        addGroupBtn = new JButton("Update View");
+        addGroupBtn.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                log("View updated!");
+                updateView();
+            }
+        });
+        panelInput.add(addGroupBtn, BorderLayout.EAST);
+        panel.add(panelInput, BorderLayout.SOUTH);
 
         textTiles = new JTextPane();
         textTiles.setEditable(false);
         JScrollPane textTilesSP = new JScrollPane(textTiles);
         textTilesSP.setBorder(BorderFactory.createTitledBorder("Tiles"));
         panel.add(textTilesSP, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private JPanel createConsoleArea()
+    {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setLayout(new BorderLayout());
+
+        console = new JTextArea();
+        console.setEditable(false);
+        JScrollPane consoleSP = new JScrollPane(console);
+        consoleSP.setBorder(BorderFactory.createTitledBorder("Console Output"));
+        panel.add(consoleSP, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private void updateView()
+    {
+        this.display.render(model, textTiles);
+    }
+
+    public void log(String message)
+    {
+        console.append(DATE_FORMAT.format(new Date()) + " " + message + "\n");
     }
 
     public static JavaKub getInstance()

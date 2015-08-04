@@ -1,5 +1,6 @@
 package com.caske2000.javakub.game;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.IntSummaryStatistics;
 import java.util.List;
@@ -14,7 +15,7 @@ public class Rules
         if (tileGroup.size() < 3)
             return false;
 
-        Tile.Color firstColor = tileGroup.get(0).getColor();
+        Color firstColor = tileGroup.get(0).getColor();
         for (Tile tile: tileGroup)
         {
             if (tile.getColor() != firstColor)
@@ -32,7 +33,7 @@ public class Rules
                 return false;
         }
 
-        List<Tile.Color> colors = new ArrayList<>();
+        List<Color> colors = new ArrayList<>();
         for (Tile tile: tileGroup)
         {
             if (colors.contains(tile.getColor()))
