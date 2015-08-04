@@ -4,12 +4,12 @@ import com.caske2000.javakub.game.Rules;
 import com.caske2000.javakub.game.Tile;
 
 import javax.swing.*;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
+import javax.swing.text.StyledDocument;
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -17,35 +17,48 @@ import java.util.List;
  */
 public class Display extends Canvas
 {
-    private List<Tile> tileGroup1 = new ArrayList<>();
-
-    public Display()
-    {
-        System.out.println(Rules.checkValidGroup(tileGroup1));
-        tileGroup1.add(new Tile(Color.ORANGE, 2));
-        tileGroup1.add(new Tile(Color.BLACK, 2));
-        tileGroup1.add(new Tile(Color.BLUE, 2));
-        tileGroup1.add(new Tile(Color.RED, 2));
-    }
+    private List<List<Tile>> tileGroupList = new ArrayList<>();
 
     public void render(DefaultListModel model, JTextPane textTiles)
     {
-        for (Tile tile: tileGroup1)
+        model.clear();
+        for (List<Tile> listTile : tileGroupList)
         {
-            model.addElement("Color: " + tile.getColor());
+            if (Rules.checkValidGroup(listTile))
+            {
+                for (Tile tile : listTile)
+                {
+                    append(textTiles, Integer.toString(tile.getNumber()) + " ", tile.getColor());
+                }
+                append(textTiles, "\n", Color.BLACK);
+            } else
+            {
+                JavaKub.getInstance().log("Tilegroup isn't valid!\n");
+            }
         }
     }
 
-    public void append(JTextPane tp, String s, Color c) { // better implementation--uses
-        // StyleContext
-        StyleContext sc = StyleContext.getDefaultStyleContext();
-        AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY,
-                StyleConstants.Foreground, c);
+    public void addNormalGroup(Color color, int number, int size)
+    {
+        tileGroupList.add(new ArrayList<Tile>() {{
+            for (int i = 0; i < size; i++)
+                add(new Tile(color, number + i));
+        }});
+    }
 
-        int len = tp.getDocument().getLength(); // same value as
-        // getText().length();
-        tp.setCaretPosition(len); // place caret at the end (with no selection)
-        tp.setCharacterAttributes(aset, false);
-        tp.replaceSelection(s); // there is no selection, so inserts at caret
+    private void append(JTextPane tp, String msg, Color color)
+    {
+        StyledDocument doc = tp.getStyledDocument();
+        StyleContext context = new StyleContext();
+        Style style = context.addStyle("caskeStyle", null);
+        StyleConstants.setForeground(style, color);
+        StyleConstants.setFontSize(style, 25);
+        try
+        {
+            doc.insertString(doc.getLength(), msg, style);
+        } catch (Exception e)
+        {
+            JavaKub.getInstance().log("ERROR: " + e);
+        }
     }
 }

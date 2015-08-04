@@ -1,5 +1,7 @@
 package com.caske2000.javakub.game;
 
+import com.caske2000.javakub.JavaKub;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.IntSummaryStatistics;
@@ -12,6 +14,7 @@ public class Rules
 {
     public static boolean checkValidGroup(List<Tile> tileGroup)
     {
+        JavaKub.getInstance().log("Checking tilegroup...");
         if (tileGroup.size() < 3)
             return false;
 
@@ -40,6 +43,7 @@ public class Rules
                 return false;
             colors.add(tile.getColor());
         }
+        JavaKub.getInstance().log("Tilegroup is valid!\n");
         return true;
     }
 
@@ -51,6 +55,7 @@ public class Rules
             if (tileGroup.get(i).getNumber() - i != firstNumber)
                 return false;
         }
+        JavaKub.getInstance().log("Tilegroup is valid!\n");
         return true;
     }
 }
