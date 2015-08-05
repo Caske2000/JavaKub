@@ -2,9 +2,14 @@ package com.caske2000.javakub;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -16,6 +21,7 @@ public class JavaKub extends JFrame
     private static final String TITLE = "JavaKub - PreAlpha";
     private static JavaKub instance;
     private Display display;
+    private MyHandler handler;
 
     // Game Tab
     private DefaultListModel model = new DefaultListModel();
@@ -69,6 +75,7 @@ public class JavaKub extends JFrame
     private JPanel createGameArea()
     {
         this.display = new Display();
+        this.handler = new MyHandler();
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.setLayout(new BorderLayout());
@@ -85,58 +92,14 @@ public class JavaKub extends JFrame
         panelInput.add(groupInput, BorderLayout.CENTER);
 
         updateViewBtn = new JButton("Update View");
-        updateViewBtn.addActionListener(e -> {
-            if (!groupInput.getText().isEmpty())
-            {
-                String[] groupData = groupInput.getText().split(":");
-                if (!(groupData[0].equals("normal") || groupData[0].equals("same")))
-                    throw new IllegalArgumentException("Your input needs to be properly formatted!");
-                if (groupData[0].equals("normal"))
-                {
-                    Field field;
-                    Color color = null;
-                    try
-                    {
-                        field = Color.class.getField(groupData[1]);
-                        color = (Color) field.get(null);
-                    } catch (NoSuchFieldException | IllegalAccessException e1)
-                    {
-                        e1.printStackTrace();
-                    }
-                    int number = Integer.parseInt(groupData[2]);
-                    int size = Integer.parseInt(groupData[3]);
-                    display.addNormalGroup(color, number, size);
-                } else if (groupData[0].equals("same"))
-                {
-                    Field field;
-                    List<Color> colorList = new ArrayList<>();
-                    try
-                    {
-                        for (int i = 1; i < 5; i++)
-                        {
-                            if (!groupData[i].equals("null"))
-                            {
-                                field = Color.class.getField(groupData[i]);
-                                colorList.add((Color) field.get(null));
-                            }
-                        }
-                    } catch (NoSuchFieldException | IllegalAccessException e1)
-                    {
-                        e1.printStackTrace();
-                    }
-                    int number = Integer.parseInt(groupData[5]);
-                    display.addSameGroup(colorList, number);
-                }
-                updateView();
-            }
-        });
+        updateViewBtn.addActionListener(handler);
         panelInput.add(updateViewBtn, BorderLayout.EAST);
 
         textMyTiles = new JTextPane();
         textMyTiles.setEditable(false);
         JScrollPane textMyTilesSP = new JScrollPane(textMyTiles);
         textMyTilesSP.setBorder(BorderFactory.createTitledBorder("My Tiles"));
-        textMyTilesSP.setPreferredSize(new Dimension(0, 100));
+        textMyTilesSP.setPreferredSize(new Dimension(0,250));
         panelInput.add(textMyTilesSP, BorderLayout.NORTH);
 
         panel.add(panelInput, BorderLayout.SOUTH);
@@ -154,8 +117,7 @@ public class JavaKub extends JFrame
     {
         JPanel panel = new JPanel();
         panel.setBorder(BorderFactory.createTitledBorder("Help"));
-
-        groupLabel = new JLabel("<html>Here you can add a new group of tiles.<br>Example: normal:red:2:4.<br>In a 'normal' group all of the tiles have the same color and their number is different, in a 'same' group their numbers are the same, but their color is different.<br>'red' is the color of the tiles, '2' is the value of the first tile and '4' is the amount of tiles in the group.<br><br>Another example: same:red:blue:orange:null:8<br>The 2nd, 3rd, 4th and 5th argument are the colors inside of your group and the last argument represents the number of the tiles.</html>", SwingConstants.CENTER);
+        groupLabel = new JLabel("<html>Here you can add a new group of tiles.<br>If you want to add a tile to your own 'deck', just type 'my:' in front of the regular command.<br><br>Example: normal:red:2:4.<br>In a 'normal' group all of the tiles have the same color and their number is different, in a 'same' group their numbers are the same, but their color is different.<br>'red' is the color of the tiles, '2' is the value of the first tile and '4' is the amount of tiles in the group.<br><br>Another example: same:red:blue:orange:null:8<br>The 2nd, 3rd, 4th and 5th argument are the colors inside of your group and the last argument represents the number of the tiles.</html>", SwingConstants.CENTER);
         panel.add(groupLabel);
 
         return panel;
@@ -177,11 +139,109 @@ public class JavaKub extends JFrame
 
     private void updateView()
     {
-        this.display.render(model, textTiles);
+        this.display.render(model, textTiles, textMyTiles);
     }
 
     public void log(String message)
     {
         console.append(DATE_FORMAT.format(new Date()) + message + "\n");
+    }
+
+    private class MyHandler implements ActionListener
+    {
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            if (e.getSource() == updateViewBtn)
+            {
+                if (!groupInput.getText().isEmpty())
+                {
+                    String[] groupData = groupInput.getText().split(":");
+                    if (groupData[0].equals("my"))
+                    {
+                        if (groupData[1].equals("normal"))
+                        {
+                            Field field;
+                            Color color = null;
+                            try
+                            {
+                                field = Color.class.getField(groupData[2]);
+                                color = (Color) field.get(null);
+                            } catch (NoSuchFieldException | IllegalAccessException e1)
+                            {
+                                log(e1.getMessage());
+                            }
+                            int number = Integer.parseInt(groupData[3]);
+                            int size = Integer.parseInt(groupData[4]);
+                            display.addNormalGroupMe(color, number, size);
+                        } else if (groupData[1].equals("same"))
+                        {
+                            Field field;
+                            List<Color> colorList = new ArrayList<>();
+                            try
+                            {
+                                for (int i = 2; i < 6; i++)
+                                {
+                                    if (!groupData[i].equals("null"))
+                                    {
+                                        field = Color.class.getField(groupData[i]);
+                                        colorList.add((Color) field.get(null));
+                                    }
+                                }
+                            } catch (NoSuchFieldException | IllegalAccessException e1)
+                            {
+                                log (e1.getMessage());
+                            }
+                            int number = Integer.parseInt(groupData[6]);
+                            display.addSameGroupMe(colorList, number);
+                        }
+                        updateView();
+                    } else if (groupData[0].equals("normal") || groupData[0].equals("same"))
+                    {
+                        if (groupData[0].equals("normal"))
+                        {
+                            Field field;
+                            Color color = null;
+                            try
+                            {
+                                field = Color.class.getField(groupData[1]);
+                                color = (Color) field.get(null);
+                            } catch (NoSuchFieldException | IllegalAccessException e1)
+                            {
+                                log (e1.getMessage());
+                            }
+                            int number = Integer.parseInt(groupData[2]);
+                            int size = Integer.parseInt(groupData[3]);
+                            display.addNormalGroup(color, number, size);
+                        } else if (groupData[0].equals("same"))
+                        {
+                            Field field;
+                            List<Color> colorList = new ArrayList<>();
+                            try
+                            {
+                                for (int i = 1; i < 5; i++)
+                                {
+                                    if (!groupData[i].equals("null"))
+                                    {
+                                        field = Color.class.getField(groupData[i]);
+                                        colorList.add((Color) field.get(null));
+                                    }
+                                }
+                            } catch (NoSuchFieldException | IllegalAccessException e1)
+                            {
+                                log (e1.getMessage());
+                            }
+                            int number = Integer.parseInt(groupData[5]);
+                            display.addSameGroup(colorList, number);
+                        }
+                        updateView();
+                    } else
+                    {
+                        throw new IllegalArgumentException("Your input needs to be properly formatted!");
+                    }
+                }
+            }
+        }
     }
 }

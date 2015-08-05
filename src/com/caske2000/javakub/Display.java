@@ -18,8 +18,9 @@ import java.util.List;
 public class Display extends Canvas
 {
     private List<List<Tile>> tileGroupList = new ArrayList<>();
+    private List<List<Tile>> myTileGroupList = new ArrayList<>();
 
-    public void render(DefaultListModel model, JTextPane textTiles)
+    public void render(DefaultListModel model, JTextPane textTiles, JTextPane textMyTiles)
     {
         model.clear();
         textTiles.setText("");
@@ -37,6 +38,41 @@ public class Display extends Canvas
                 JavaKub.getInstance().log("Tilegroup isn't valid!\n");
             }
         }
+
+        textMyTiles.setText("");
+        for (List<Tile> listTile : myTileGroupList)
+        {
+            if (Rules.checkValidGroup(listTile))
+            {
+                for (Tile tile : listTile)
+                {
+                    append(textMyTiles, Integer.toString(tile.getNumber()) + " ", tile.getColor());
+                }
+                append(textMyTiles, "\n", Color.BLACK);
+            } else
+            {
+                JavaKub.getInstance().log("Tilegroup isn't valid!\n");
+            }
+        }
+    }
+
+    public void addNormalGroupMe(Color color, int number, int size)
+    {
+        myTileGroupList.add(new ArrayList<Tile>()
+        {{
+                for (int i = 0; i < size; i++)
+                    add(new Tile(color, number + i));
+            }});
+    }
+
+    public void addSameGroupMe(List<Color> colorList, int number)
+    {
+        //TODO replace call
+        myTileGroupList.add(new ArrayList<Tile>()
+        {{
+                for (Color color : colorList)
+                    add(new Tile(color, number));
+            }});
     }
 
     public void addNormalGroup(Color color, int number, int size)
