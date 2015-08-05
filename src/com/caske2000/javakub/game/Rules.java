@@ -26,7 +26,7 @@ public class Rules
         return checkNormalGroup(tileGroup);
     }
 
-    public static boolean checkSameNumber(List<Tile> tileGroup)
+    private static boolean checkSameNumber(List<Tile> tileGroup)
     {
         int firstNumber = tileGroup.get(0).getNumber();
         for (Tile tile : tileGroup)
@@ -46,7 +46,7 @@ public class Rules
         return true;
     }
 
-    public static boolean checkNormalGroup(List<Tile> tileGroup)
+    private static boolean checkNormalGroup(List<Tile> tileGroup)
     {
         int firstNumber = tileGroup.get(0).getNumber();
         for (int i = 1; i < tileGroup.size(); i++)

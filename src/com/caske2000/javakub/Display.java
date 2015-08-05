@@ -11,19 +11,23 @@ import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by Caske2000 on 03/08/2015.
  */
 public class Display extends Canvas
 {
-    private List<List<Tile>> tileGroupList = new ArrayList<>();
-    private List<List<Tile>> myTileGroupList = new ArrayList<>();
+    private final List<List<Tile>> tileGroupList = new ArrayList<>();
+    private final List<Tile> myTiles = new ArrayList<>();
+
+    private final List<Tile> allTiles = new ArrayList<>();
 
     public void render(DefaultListModel model, JTextPane textTiles, JTextPane textMyTiles)
     {
         model.clear();
         textTiles.setText("");
+        allTiles.clear();
         for (List<Tile> listTile : tileGroupList)
         {
             if (Rules.checkValidGroup(listTile))
@@ -31,6 +35,7 @@ public class Display extends Canvas
                 for (Tile tile : listTile)
                 {
                     append(textTiles, Integer.toString(tile.getNumber()) + " ", tile.getColor());
+                    allTiles.add(tile);
                 }
                 append(textTiles, "\n", Color.BLACK);
             } else
@@ -40,39 +45,14 @@ public class Display extends Canvas
         }
 
         textMyTiles.setText("");
-        for (List<Tile> listTile : myTileGroupList)
+        for (Tile tile : myTiles)
         {
-            if (Rules.checkValidGroup(listTile))
-            {
-                for (Tile tile : listTile)
-                {
-                    append(textMyTiles, Integer.toString(tile.getNumber()) + " ", tile.getColor());
-                }
-                append(textMyTiles, "\n", Color.BLACK);
-            } else
-            {
-                JavaKub.getInstance().log("Tilegroup isn't valid!\n");
-            }
+            if (tile.isJoker())
+                append(textMyTiles, "? ", Color.MAGENTA);
+            else
+                append(textMyTiles, Integer.toString(tile.getNumber()) + " ", tile.getColor());
+            allTiles.add(tile);
         }
-    }
-
-    public void addNormalGroupMe(Color color, int number, int size)
-    {
-        myTileGroupList.add(new ArrayList<Tile>()
-        {{
-                for (int i = 0; i < size; i++)
-                    add(new Tile(color, number + i));
-            }});
-    }
-
-    public void addSameGroupMe(List<Color> colorList, int number)
-    {
-        //TODO replace call
-        myTileGroupList.add(new ArrayList<Tile>()
-        {{
-                for (Color color : colorList)
-                    add(new Tile(color, number));
-            }});
     }
 
     public void addNormalGroup(Color color, int number, int size)
@@ -80,7 +60,7 @@ public class Display extends Canvas
         tileGroupList.add(new ArrayList<Tile>()
         {{
                 for (int i = 0; i < size; i++)
-                    add(new Tile(color, number + i));
+                    add(new Tile(color, number + i, false));
             }});
     }
 
@@ -89,11 +69,25 @@ public class Display extends Canvas
         //TODO replace call
         tileGroupList.add(new ArrayList<Tile>()
         {{
-                for (Color color: colorList)
-                    add(new Tile(color, number));
+                addAll(colorList.stream().map(color -> new Tile(color, number, false)).collect(Collectors.toList()));
             }});
     }
 
+    public void clear(String place)
+    {
+        switch (place)
+        {
+            case "my":
+                myTiles.clear();
+                break;
+            case "b":
+                tileGroupList.clear();
+                break;
+            default:
+                JavaKub.getInstance().log("The argument you provided is not valid, argument found: " + place);
+                throw new IllegalArgumentException("The argument you provided is not valid, argument found: " + place);
+        }
+    }
 
     private void append(JTextPane tp, String msg, Color color)
     {
@@ -109,5 +103,10 @@ public class Display extends Canvas
         {
             JavaKub.getInstance().log("ERROR: " + e);
         }
+    }
+
+    public void addMyDeck(Color color, int number, boolean isJoker)
+    {
+        myTiles.add(new Tile(color, number, isJoker));
     }
 }
