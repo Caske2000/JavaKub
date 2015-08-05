@@ -20,38 +20,44 @@ public class Display extends Canvas
 {
     private final List<List<Tile>> tileGroupList = new ArrayList<>();
     private final List<Tile> myTiles = new ArrayList<>();
-
     private final List<Tile> allTiles = new ArrayList<>();
 
-    public void render(DefaultListModel model, JTextPane textTiles, JTextPane textMyTiles)
+    private Font font = new Font("myFont", Font.PLAIN, 30);
+
+    public void render(DefaultListModel model, List<JLabel> gameTilePanel, List<JLabel> myTilePanel)
     {
+        int gameRow = 0;
         model.clear();
-        textTiles.setText("");
         allTiles.clear();
         for (List<Tile> listTile : tileGroupList)
         {
+            int gamePanel = 0;
             if (Rules.checkValidGroup(listTile))
             {
                 for (Tile tile : listTile)
                 {
-                    append(textTiles, Integer.toString(tile.getNumber()) + " ", tile.getColor());
+                    gameTilePanel.get(gamePanel + gameRow * 13).setFont(font);
+                    gameTilePanel.get(gamePanel + gameRow * 13).setText("<html><font color=" + tile.getColorName() + ">" + tile.getNumber() + "</font></html>");
                     allTiles.add(tile);
+                    gamePanel++;
                 }
-                append(textTiles, "\n", Color.BLACK);
+                gameRow++;
             } else
             {
                 JavaKub.getInstance().log("Tilegroup isn't valid!\n");
             }
         }
 
-        textMyTiles.setText("");
+        int panelCount = 0;
         for (Tile tile : myTiles)
         {
+            myTilePanel.get(panelCount).setFont(font);
             if (tile.isJoker())
-                append(textMyTiles, "? ", Color.MAGENTA);
+                myTilePanel.get(panelCount).setText("<html><font color=#7007E0>?</font></html>");
             else
-                append(textMyTiles, Integer.toString(tile.getNumber()) + " ", tile.getColor());
+                myTilePanel.get(panelCount).setText("<html><font color=" + tile.getColorName() + ">" + tile.getNumber() + "</font></html>");
             allTiles.add(tile);
+            panelCount++;
         }
     }
 
@@ -66,7 +72,6 @@ public class Display extends Canvas
 
     public void addSameGroup(List<Color> colorList, int number)
     {
-        //TODO replace call
         tileGroupList.add(new ArrayList<Tile>()
         {{
                 addAll(colorList.stream().map(color -> new Tile(color, number, false)).collect(Collectors.toList()));
@@ -108,5 +113,16 @@ public class Display extends Canvas
     public void addMyDeck(Color color, int number, boolean isJoker)
     {
         myTiles.add(new Tile(color, number, isJoker));
+    }
+
+    public void moveTile(JLabel start, JLabel end)
+    {
+        System.out.println(start.getName());
+        System.out.println(end.getName());
+        //TODO Fix this
+        int test = Integer.parseInt(start.getName().substring(5));
+        System.out.println(test);
+        int test2 = Integer.parseInt(end.getName().substring(5));
+        System.out.println(test2);
     }
 }
