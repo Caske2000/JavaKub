@@ -2,11 +2,10 @@ package com.caske2000.javakub;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.*;
+import java.util.List;
 
 /**
  * Created by Caske2000 on 03/08/2015.
@@ -21,14 +20,13 @@ public class JavaKub extends JFrame
     // Game Tab
     private DefaultListModel model = new DefaultListModel();
     private JList listGroups;
-    private JTextField fieldInput;
+    private JTextField groupInput;
     private JButton updateViewBtn;
     private JTextPane textTiles;
+    private JTextPane textMyTiles;
 
     // Group Creation Tab
     private JLabel groupLabel;
-    private JTextField groupInput;
-    private JButton addGroupBtn;
 
     // Console Tab
     private JTextArea console;
@@ -44,13 +42,27 @@ public class JavaKub extends JFrame
         setLocationRelativeTo(null);
     }
 
+    public static JavaKub getInstance()
+    {
+        return instance;
+    }
+
+    public static void main(String[] args)
+    {
+        SwingUtilities.invokeLater(() -> {
+            instance = new JavaKub();
+            instance.setVisible(true);
+            instance.log("Program Started!");
+        });
+    }
+
     private void createView()
     {
         JTabbedPane tabbedPane = new JTabbedPane();
         getContentPane().add(tabbedPane);
 
         tabbedPane.add("Game Area", createGameArea());
-        tabbedPane.add("Group Creator", createGroupArea());
+        tabbedPane.add("Help", createHelpArea());
         tabbedPane.add("Console", createConsoleArea());
     }
 
@@ -68,20 +80,65 @@ public class JavaKub extends JFrame
         panel.add(listGroupsSP, BorderLayout.EAST);
 
         JPanel panelInput = new JPanel(new BorderLayout());
-        fieldInput = new JTextField();
-        fieldInput.setBorder(BorderFactory.createTitledBorder("Input"));
-        panelInput.add(fieldInput, BorderLayout.CENTER);
+        groupInput = new JTextField("normal:red:2:4");
+        groupInput.setBorder(BorderFactory.createTitledBorder("Group creator"));
+        panelInput.add(groupInput, BorderLayout.CENTER);
 
         updateViewBtn = new JButton("Update View");
-        updateViewBtn.addActionListener(new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
+        updateViewBtn.addActionListener(e -> {
+            if (!groupInput.getText().isEmpty())
             {
+                String[] groupData = groupInput.getText().split(":");
+                if (!(groupData[0].equals("normal") || groupData[0].equals("same")))
+                    throw new IllegalArgumentException("Your input needs to be properly formatted!");
+                if (groupData[0].equals("normal"))
+                {
+                    Field field;
+                    Color color = null;
+                    try
+                    {
+                        field = Color.class.getField(groupData[1]);
+                        color = (Color) field.get(null);
+                    } catch (NoSuchFieldException | IllegalAccessException e1)
+                    {
+                        e1.printStackTrace();
+                    }
+                    int number = Integer.parseInt(groupData[2]);
+                    int size = Integer.parseInt(groupData[3]);
+                    display.addNormalGroup(color, number, size);
+                } else if (groupData[0].equals("same"))
+                {
+                    Field field;
+                    List<Color> colorList = new ArrayList<>();
+                    try
+                    {
+                        for (int i = 1; i < 5; i++)
+                        {
+                            if (!groupData[i].equals("null"))
+                            {
+                                field = Color.class.getField(groupData[i]);
+                                colorList.add((Color) field.get(null));
+                            }
+                        }
+                    } catch (NoSuchFieldException | IllegalAccessException e1)
+                    {
+                        e1.printStackTrace();
+                    }
+                    int number = Integer.parseInt(groupData[5]);
+                    display.addSameGroup(colorList, number);
+                }
                 updateView();
             }
         });
         panelInput.add(updateViewBtn, BorderLayout.EAST);
+
+        textMyTiles = new JTextPane();
+        textMyTiles.setEditable(false);
+        JScrollPane textMyTilesSP = new JScrollPane(textMyTiles);
+        textMyTilesSP.setBorder(BorderFactory.createTitledBorder("My Tiles"));
+        textMyTilesSP.setPreferredSize(new Dimension(0, 100));
+        panelInput.add(textMyTilesSP, BorderLayout.NORTH);
+
         panel.add(panelInput, BorderLayout.SOUTH);
 
         textTiles = new JTextPane();
@@ -93,52 +150,13 @@ public class JavaKub extends JFrame
         return panel;
     }
 
-    private JPanel createGroupArea()
+    private JPanel createHelpArea()
     {
         JPanel panel = new JPanel();
-        panel.setBorder(BorderFactory.createTitledBorder("Create new group"));
+        panel.setBorder(BorderFactory.createTitledBorder("Help"));
 
-        // TODO add second type of group
-        groupLabel = new JLabel();
-        groupLabel.setText("Here you can add a new group of tiles. Example: addGroup:red:2:4. red is the color of the tiles, 2 is the value of the first tile and 4 is the amount of tiles in the group.");
+        groupLabel = new JLabel("<html>Here you can add a new group of tiles.<br>Example: normal:red:2:4.<br>In a 'normal' group all of the tiles have the same color and their number is different, in a 'same' group their numbers are the same, but their color is different.<br>'red' is the color of the tiles, '2' is the value of the first tile and '4' is the amount of tiles in the group.<br><br>Another example: same:red:blue:orange:null:8<br>The 2nd, 3rd, 4th and 5th argument are the colors inside of your group and the last argument represents the number of the tiles.</html>", SwingConstants.CENTER);
         panel.add(groupLabel);
-
-        groupInput = new JTextField();
-        groupInput.setBorder(BorderFactory.createTitledBorder("Input"));
-        groupInput.setPreferredSize(new Dimension(1000, 50));
-
-        panel.add(groupInput);
-
-        addGroupBtn = new JButton("Add group");
-        addGroupBtn.addActionListener(new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                String[] groupData = groupInput.getText().split(":");
-                if (!groupData[0].equals("addGroup"))
-                    throw new IllegalArgumentException("Your input needs to be properly formatted!");
-                Field field;
-                Color color = null;
-                try
-                {
-                    field = Color.class.getField(groupData[1]);
-                    color = (Color)field.get(null);
-                } catch (NoSuchFieldException e1)
-                {
-                    e1.printStackTrace();
-                }
-                catch (IllegalAccessException e2)
-                {
-                    e2.printStackTrace();
-                }
-                int number = Integer.parseInt(groupData[2]);
-                int size = Integer.parseInt(groupData[3]);
-                display.addNormalGroup(color, number, size);
-                display.render(model, textTiles);
-            }
-        });
-        panel.add(addGroupBtn);
 
         return panel;
     }
@@ -165,19 +183,5 @@ public class JavaKub extends JFrame
     public void log(String message)
     {
         console.append(DATE_FORMAT.format(new Date()) + message + "\n");
-    }
-
-    public static JavaKub getInstance()
-    {
-        return instance;
-    }
-
-    public static void main(String[] args)
-    {
-        SwingUtilities.invokeLater(() -> {
-            instance = new JavaKub();
-            instance.setVisible(true);
-            instance.log("Program Started!");
-        });
     }
 }

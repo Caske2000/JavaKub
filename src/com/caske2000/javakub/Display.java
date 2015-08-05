@@ -9,7 +9,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,6 +22,7 @@ public class Display extends Canvas
     public void render(DefaultListModel model, JTextPane textTiles)
     {
         model.clear();
+        textTiles.setText("");
         for (List<Tile> listTile : tileGroupList)
         {
             if (Rules.checkValidGroup(listTile))
@@ -40,11 +41,23 @@ public class Display extends Canvas
 
     public void addNormalGroup(Color color, int number, int size)
     {
-        tileGroupList.add(new ArrayList<Tile>() {{
-            for (int i = 0; i < size; i++)
-                add(new Tile(color, number + i));
-        }});
+        tileGroupList.add(new ArrayList<Tile>()
+        {{
+                for (int i = 0; i < size; i++)
+                    add(new Tile(color, number + i));
+            }});
     }
+
+    public void addSameGroup(List<Color> colorList, int number)
+    {
+        //TODO replace call
+        tileGroupList.add(new ArrayList<Tile>()
+        {{
+                for (Color color: colorList)
+                    add(new Tile(color, number));
+            }});
+    }
+
 
     private void append(JTextPane tp, String msg, Color color)
     {

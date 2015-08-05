@@ -4,7 +4,6 @@ import com.caske2000.javakub.JavaKub;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.IntSummaryStatistics;
 import java.util.List;
 
 /**
@@ -19,7 +18,7 @@ public class Rules
             return false;
 
         Color firstColor = tileGroup.get(0).getColor();
-        for (Tile tile: tileGroup)
+        for (Tile tile : tileGroup)
         {
             if (tile.getColor() != firstColor)
                 return checkSameNumber(tileGroup);
@@ -30,14 +29,14 @@ public class Rules
     public static boolean checkSameNumber(List<Tile> tileGroup)
     {
         int firstNumber = tileGroup.get(0).getNumber();
-        for (Tile tile: tileGroup)
+        for (Tile tile : tileGroup)
         {
             if (tile.getNumber() != firstNumber)
                 return false;
         }
 
         List<Color> colors = new ArrayList<>();
-        for (Tile tile: tileGroup)
+        for (Tile tile : tileGroup)
         {
             if (colors.contains(tile.getColor()))
                 return false;
