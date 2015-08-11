@@ -10,8 +10,9 @@ public class Tile
     private Color color;
     private int number;
     private boolean isJoker;
+    private int x, y;
 
-    public Tile(Color color, int number, boolean isJoker)
+    public Tile(Color color, int number, int x, int y, boolean isJoker)
     {
         if (!isJoker)
         {
@@ -23,6 +24,8 @@ public class Tile
         this.color = color;
         this.number = number;
         this.isJoker = isJoker;
+        this.x = x;
+        this.y = y;
     }
 
     public Color getColor()
@@ -45,6 +48,16 @@ public class Tile
     public int getNumber()
     {
         return number;
+    }
+
+    public int getX()
+    {
+        return x;
+    }
+
+    public int getY()
+    {
+        return y;
     }
 
     public boolean isJoker()

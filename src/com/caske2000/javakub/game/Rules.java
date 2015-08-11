@@ -1,5 +1,6 @@
 package com.caske2000.javakub.game;
 
+import com.caske2000.javakub.GUI.JTileHolder;
 import com.caske2000.javakub.JavaKub;
 
 import java.awt.*;
@@ -11,48 +12,60 @@ import java.util.List;
  */
 public class Rules
 {
-    public static boolean checkValidGroup(List<Tile> tileGroup)
+    public static boolean checkValidGroup(JTileHolder[][] gameTilePanel, int y)
     {
         JavaKub.getInstance().log("Checking tilegroup...");
-        if (tileGroup.size() < 3)
+        if (gameTilePanel[3][y] == null)
             return false;
 
-        Color firstColor = tileGroup.get(0).getColor();
-        for (Tile tile : tileGroup)
+        Color firstColor = gameTilePanel[0][y].getTile().getColor();
+        for (int x = 1; x < 13; x++)
         {
-            if (tile.getColor() != firstColor)
-                return checkSameNumber(tileGroup);
+            if (gameTilePanel[x][y].getTile() != null)
+            {
+                if (gameTilePanel[x][y].getTile().getColor() != firstColor)
+                    return checkSameNumber(gameTilePanel, y);
+            }
+            return checkNormalGroup(gameTilePanel, y);
         }
-        return checkNormalGroup(tileGroup);
+        return false;
     }
 
-    private static boolean checkSameNumber(List<Tile> tileGroup)
+    private static boolean checkSameNumber(JTileHolder[][] gameTilePanel, int y)
     {
-        int firstNumber = tileGroup.get(0).getNumber();
-        for (Tile tile : tileGroup)
+        int firstNumber = gameTilePanel[0][y].getTile().getNumber();
+        for (int x = 1; x < 13; x++)
         {
-            if (tile.getNumber() != firstNumber)
-                return false;
+            if (gameTilePanel[x][y].getTile() != null)
+            {
+                if (gameTilePanel[x][y].getTile().getNumber() != firstNumber)
+                    return false;
+            }
         }
-
         List<Color> colors = new ArrayList<>();
-        for (Tile tile : tileGroup)
+        for (int x = 0; x < 13; x++)
         {
-            if (colors.contains(tile.getColor()))
-                return false;
-            colors.add(tile.getColor());
+            if (gameTilePanel[x][y].getTile() != null)
+            {
+                if (colors.contains(gameTilePanel[x][y].getTile().getColor()))
+                    return false;
+                colors.add(gameTilePanel[x][y].getTile().getColor());
+            }
         }
         JavaKub.getInstance().log("Tilegroup is valid!\n");
         return true;
     }
 
-    private static boolean checkNormalGroup(List<Tile> tileGroup)
+    private static boolean checkNormalGroup(JTileHolder[][] gameTilePanel, int y)
     {
-        int firstNumber = tileGroup.get(0).getNumber();
-        for (int i = 1; i < tileGroup.size(); i++)
+        int firstNumber = gameTilePanel[0][y].getTile().getNumber();
+        for (int x = 1; x < 13; x++)
         {
-            if (tileGroup.get(i).getNumber() - i != firstNumber)
-                return false;
+            if (gameTilePanel[x][y].getTile() != null)
+            {
+                if (gameTilePanel[x][y].getTile().getNumber() - x != firstNumber)
+                    return false;
+            }
         }
         JavaKub.getInstance().log("Tilegroup is valid!\n");
         return true;

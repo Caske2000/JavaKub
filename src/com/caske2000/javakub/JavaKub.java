@@ -1,40 +1,45 @@
 package com.caske2000.javakub;
 
+import com.caske2000.javakub.GUI.Display;
+import com.caske2000.javakub.GUI.JTileHolder;
+import com.caske2000.javakub.GUI.TileDialog;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Created by Caske2000 on 03/08/2015.
  */
-public class JavaKub extends JFrame
+public class JavaKub extends JFrame implements ActionListener
 {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("[HH:mm:ss]    ");
     private static final String TITLE = "JavaKub - PreAlpha";
     private static JavaKub instance;
-    private Display display;
-    private MyListener myListener;
-
+    private static TileDialog tileInstance;
     // Game Tab
     private final DefaultListModel model = new DefaultListModel();
+    public final int boardWidth = 13, boardHeight = 10;
+    private final int invWidth = 20, invHeight = 3;
+    public final JTileHolder[][] gameTilePanels = new JTileHolder[boardWidth][boardHeight];
+    public final JTileHolder[][] myTilePanels = new JTileHolder[invWidth][invHeight];
+    private JTileHolder start = null;
+    private Display display;
     private JTextField groupInput;
     private JButton updateViewBtn;
-    private List<JLabel> gameTilePanels = new ArrayList<>();
-    private List<JLabel> myTilePanels = new ArrayList<>();
-    private JButton moveBtn;
-    private boolean isMoving = false;
-    JLabel start = null;
+    private JButton swapBtn;
+    private boolean isSwapping = false;
+    private JButton deleteBtn;
+    private boolean isDeleting = false;
 
     // Group Creation Tab
-    private JLabel groupLabel;
+    // TODO fix this
+    private JLabel helpLbl;
 
     // Console Tab
     private JTextArea console;
@@ -77,60 +82,73 @@ public class JavaKub extends JFrame
     private JPanel createGameArea()
     {
         this.display = new Display();
-        this.myListener = new MyListener();
 
         JPanel panel = new JPanel(new BorderLayout());
 
-        JPanel gameTileGrid = new JPanel(new GridLayout(10, 13));
+        JPanel gameTileGrid = new JPanel(new GridLayout(boardHeight, boardWidth));
         gameTileGrid.setBorder(BorderFactory.createTitledBorder("The Game"));
         gameTileGrid.setBackground(Color.WHITE);
         JScrollPane gameGridSP = new JScrollPane(gameTileGrid);
         panel.add(gameGridSP, BorderLayout.CENTER);
 
-        for (int i = 1; i <= 130; i++)
+        for (int y = 0; y < boardHeight; y++)
         {
-            JLabel lbl = new JLabel("-", SwingConstants.CENTER);
+            for (int x = 0; x < boardWidth; x++)
+            {
+                JTileHolder tileH = new JTileHolder("-", SwingConstants.CENTER);
 
-            lbl.setEnabled(true);
-            lbl.setPreferredSize(new Dimension(40, 40));
-            lbl.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-            lbl.addMouseListener(new BoxListener());
-            lbl.setName("gTile" + i);
-            gameTilePanels.add(lbl);
-            gameTileGrid.add(lbl);
+                tileH.setEnabled(true);
+                tileH.setPreferredSize(new Dimension(40, 40));
+                tileH.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+                tileH.addMouseListener(new BoxListener());
+                tileH.setName(String.format("gTile(%d:%d)", x, y));
+                gameTilePanels[x][y] = tileH;
+                gameTileGrid.add(tileH);
+            }
         }
 
-        JPanel myTileGrid = new JPanel(new GridLayout(3, 20));
+        JPanel myTileGrid = new JPanel(new GridLayout(invHeight, invWidth));
         myTileGrid.setBorder(BorderFactory.createTitledBorder("Your Tiles"));
 
-        for (int i = 1; i <= 60; i++)
+        for (int x = 0; x < invWidth; x++)
         {
-            JLabel lbl = new JLabel("-", SwingConstants.CENTER);
+            for (int y = 0; y < invHeight; y++)
+            {
+                JTileHolder tileH = new JTileHolder("-", SwingConstants.CENTER);
 
-            lbl.setEnabled(true);
-            lbl.setPreferredSize(new Dimension(40, 40));
-            lbl.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-            lbl.addMouseListener(new BoxListener());
-            lbl.setName("mTile" + i);
-            myTilePanels.add(lbl);
-            myTileGrid.add(lbl);
+                tileH.setEnabled(true);
+                tileH.setPreferredSize(new Dimension(40, 40));
+                tileH.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+                tileH.addMouseListener(new BoxListener());
+                tileH.setName(String.format("myTile(%d:%d)", x, y));
+                myTilePanels[x][y] = tileH;
+                myTileGrid.add(tileH);
+            }
         }
 
         JPanel panelUtils = new JPanel(new BorderLayout());
+        panelUtils.setPreferredSize(new Dimension(150, 0));
         panelUtils.setBorder(BorderFactory.createTitledBorder("Utils"));
-        moveBtn = new JButton("Move Tile");
-        moveBtn.addActionListener(myListener);
-        panelUtils.add(moveBtn, BorderLayout.EAST);
+        swapBtn = new JButton("Swap Tiles");
+        swapBtn.addActionListener(this);
+        swapBtn.setPreferredSize(new Dimension(0, 200));
+        swapBtn.setToolTipText("Press this button to start the swapping of tiles, next press a tile of your own 'deck' followed by a tile of the game board. (You can't swap a empty tile)");
+        panelUtils.add(swapBtn, BorderLayout.NORTH);
+
+        deleteBtn = new JButton("Delete Row");
+        deleteBtn.addActionListener(this);
+        deleteBtn.setPreferredSize(new Dimension(0, 200));
+        deleteBtn.setToolTipText("Press this button followed by a tile to delete all the tiles in that row.");
+        panelUtils.add(deleteBtn, BorderLayout.SOUTH);
 
         JPanel panelInput = new JPanel(new BorderLayout());
-        groupInput = new JTextField("normal:red:2:4");
-        groupInput.setBorder(BorderFactory.createTitledBorder("Group creator"));
+        groupInput = new JTextField();
+        groupInput.setBorder(BorderFactory.createTitledBorder("Console"));
         groupInput.setPreferredSize(new Dimension(1150, 40));
-        groupInput.addActionListener(myListener);
         panelInput.add(groupInput, BorderLayout.WEST);
 
         updateViewBtn = new JButton("Update View");
-        updateViewBtn.addActionListener(myListener);
+        updateViewBtn.addActionListener(this);
         panelInput.add(updateViewBtn, BorderLayout.EAST);
 
         panelInput.add(myTileGrid, BorderLayout.NORTH);
@@ -144,8 +162,8 @@ public class JavaKub extends JFrame
     {
         JPanel panel = new JPanel();
         panel.setBorder(BorderFactory.createTitledBorder("Help"));
-        groupLabel = new JLabel("<html>Here you can add a new group of tiles.<br>If you want to add a tile to your own 'deck', just type 'my:' followed by a color and a number (if it is a joker, just add ':j' after a random color and number)<br>To clear all tiles use the clear command followed by a semicolon and a identifier.<br>Identifiers:<br>-'my' clears your own 'deck'<br>-'b' clears the games 'deck'<br><br>Example: normal:red:2:4.<br>In a 'normal' group all of the tiles have the same color and their number is different, in a 'same' group their numbers are the same, but their color is different.<br>'red' is the color of the tiles, '2' is the value of the first tile and '4' is the amount of tiles in the group.<br><br>Another example: same:red:blue:orange:null:8<br>The 2nd, 3rd, 4th and 5th argument are the colors inside of your group and the last argument represents the number of the tiles.</html>", SwingConstants.CENTER);
-        panel.add(groupLabel);
+        helpLbl = new JLabel("<html>Inside the 'Create group' dialog, you can hover over the inputs to learn what they do!</html>");
+        panel.add(helpLbl);
 
         return panel;
     }
@@ -164,9 +182,38 @@ public class JavaKub extends JFrame
         return panel;
     }
 
-    private void updateView()
+    public void updateView()
     {
         this.display.render(model, gameTilePanels, myTilePanels);
+    }
+
+    private void clear(int y, boolean gameBoard)
+    {
+        if (gameBoard)
+        {
+            if (!(y < 0 || y >= boardHeight))
+            {
+                for (int i = 0; i <= boardHeight; i++)
+                {
+                    gameTilePanels[i][y].clear();
+                    return;
+                }
+            }
+
+        } else
+        {
+            if (!(y < 0 || y >= invHeight))
+            {
+                for (int i = 0; i <= invHeight; i++)
+                {
+                    myTilePanels[i][y].clear();
+                    return;
+                }
+            }
+            update(getGraphics());
+        }
+        JavaKub.getInstance().log("The argument you provided is not valid, argument found: " + y);
+        throw new IllegalArgumentException("The argument you provided is not valid, argument found: " + y);
     }
 
     public void log(String message)
@@ -174,113 +221,51 @@ public class JavaKub extends JFrame
         console.append(DATE_FORMAT.format(new Date()) + message + "\n");
     }
 
+    @Override
+    public void actionPerformed(ActionEvent e)
+    {
+        if (e.getSource() == swapBtn)
+        {
+            isSwapping = true;
+            swapBtn.setEnabled(false);
+        } else if (e.getSource() == deleteBtn)
+        {
+            isDeleting = true;
+            deleteBtn.setEnabled(false);
+        } else if (e.getSource() == updateViewBtn)
+            updateView();
+    }
+
     private class BoxListener extends MouseAdapter
     {
         public void mouseClicked(MouseEvent me)
         {
-            JLabel clicked = (JLabel) me.getSource();
+            JTileHolder clicked = (JTileHolder) me.getSource();
 
-            if (isMoving)
+            if (isSwapping)
             {
                 if (start != null)
                 {
                     if (start != clicked)
                         display.moveTile(start, clicked);
 
-                    isMoving = false;
+                    isSwapping = false;
+                    swapBtn.setEnabled(true);
                     start = null;
-                }
-
-                if (start == null)
+                } else
                     start = clicked;
-            }
-        }
-    }
-
-    private class MyListener implements ActionListener
-    {
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-            if (e.getSource() == moveBtn)
+            } else if (isDeleting)
             {
-                isMoving = true;
-            } else if (e.getSource() == groupInput)
+                clear(Integer.parseInt(clicked.getName().split(":")[1].replaceAll("[^0-9]", "")), clicked.getName().charAt(0) == 'g');
+                isDeleting = false;
+                deleteBtn.setEnabled(true);
+            } else
             {
-                e.setSource(updateViewBtn);
-            } else if (e.getSource() == updateViewBtn)
-            {
-                String[] groupData = groupInput.getText().split(":");
-                if (groupData[0].equals("clear"))
-                {
-                    display.clear(groupData[1]);
-                    updateView();
-                } else if (!groupInput.getText().isEmpty())
-                {
-                    if (groupData[0].equals("my"))
-                    {
-                        Field field;
-                        Color color = null;
-                        try
-                        {
-                            field = Color.class.getField(groupData[1]);
-                            color = (Color) field.get(null);
-                        } catch (NoSuchFieldException | IllegalAccessException e1)
-                        {
-                            log(e1.getMessage());
-                        }
-                        int number = Integer.parseInt(groupData[2]);
-                        if (groupData.length > 3)
-                        {
-                            if (groupData[3].equals("j"))
-                                display.addMyDeck(color, number, true);
-                        } else
-                            display.addMyDeck(color, number, false);
-                    } else if (groupData[0].equals("normal") || groupData[0].equals("same"))
-                    {
-                        if (groupData[0].equals("normal"))
-                        {
-                            Field field;
-                            Color color = null;
-                            try
-                            {
-                                field = Color.class.getField(groupData[1]);
-                                color = (Color) field.get(null);
-                            } catch (NoSuchFieldException | IllegalAccessException e1)
-                            {
-                                log(e1.getMessage());
-                            }
-                            int number = Integer.parseInt(groupData[2]);
-                            int size = Integer.parseInt(groupData[3]);
-                            display.addNormalGroup(color, number, size);
-                        } else if (groupData[0].equals("same"))
-                        {
-                            Field field;
-                            List<Color> colorList = new ArrayList<>();
-                            try
-                            {
-                                for (int i = 1; i < 5; i++)
-                                {
-                                    if (!groupData[i].equals("null"))
-                                    {
-                                        field = Color.class.getField(groupData[i]);
-                                        colorList.add((Color) field.get(null));
-                                    }
-                                }
-                            } catch (NoSuchFieldException | IllegalAccessException e1)
-                            {
-                                log(e1.getMessage());
-                            }
-                            int number = Integer.parseInt(groupData[5]);
-                            display.addSameGroup(colorList, number);
-                        }
-                        updateView();
-                    } else
-                    {
-                        throw new IllegalArgumentException("Your input needs to be properly formatted!");
-                    }
-                }
-                updateView();
+                SwingUtilities.invokeLater(() -> {
+                    tileInstance = new TileDialog(instance, Integer.parseInt(clicked.getName().split(":")[0].substring(clicked.getName().charAt(0) == 'g' ? 6 : 7)), Integer.parseInt(clicked.getName().split(":")[1].replaceAll("[^0-9]", "")));
+                    tileInstance.setVisible(true);
+                    instance.log("Opened new dialog.");
+                });
             }
         }
     }
