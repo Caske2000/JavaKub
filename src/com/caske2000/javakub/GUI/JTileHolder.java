@@ -11,6 +11,7 @@ import java.awt.*;
 public class JTileHolder extends JLabel
 {
     private final Font font = new Font("myFont", Font.PLAIN, 30);
+    private final Font defaultFont = new Font("myFont", Font.PLAIN, 12);
     private Tile tile = null;
 
     public JTileHolder(String text, int horizontalAlignment)
@@ -31,6 +32,7 @@ public class JTileHolder extends JLabel
         if (tile == null)
         {
             this.tile = null;
+            setFont(defaultFont);
             setText("-");
         } else
         {
@@ -46,6 +48,7 @@ public class JTileHolder extends JLabel
     public void clear()
     {
         this.tile = null;
+        setFont(defaultFont);
         setText("-");
     }
 }

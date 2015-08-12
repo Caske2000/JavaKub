@@ -34,6 +34,7 @@ public class JavaKub extends JFrame implements ActionListener
     private JButton updateViewBtn;
     private JButton swapBtn;
     private boolean isSwapping = false;
+    private JButton resetBtn;
     private JButton deleteBtn;
     private boolean isDeleting = false;
 
@@ -135,6 +136,13 @@ public class JavaKub extends JFrame implements ActionListener
         swapBtn.setToolTipText("Press this button to start the swapping of tiles, next press a tile of your own 'deck' followed by a tile of the game board. (You can't swap a empty tile)");
         panelUtils.add(swapBtn, BorderLayout.NORTH);
 
+        resetBtn = new JButton("Reset Swapping");
+        resetBtn.addActionListener(this);
+        resetBtn.setPreferredSize(new Dimension(0, 200));
+        resetBtn.setToolTipText("Press this button to stop swapping.");
+        resetBtn.addActionListener(this);
+        panelUtils.add(resetBtn, BorderLayout.CENTER);
+
         deleteBtn = new JButton("Delete Row");
         deleteBtn.addActionListener(this);
         deleteBtn.setPreferredSize(new Dimension(0, 200));
@@ -184,10 +192,10 @@ public class JavaKub extends JFrame implements ActionListener
 
     public void updateView()
     {
-        this.display.render(model, gameTilePanels, myTilePanels);
+        this.display.render(model, gameTilePanels);
     }
 
-    private void clear(int y, boolean gameBoard)
+    public void clear(int y, boolean gameBoard)
     {
         if (gameBoard)
         {
@@ -196,8 +204,8 @@ public class JavaKub extends JFrame implements ActionListener
                 for (int i = 0; i <= boardHeight; i++)
                 {
                     gameTilePanels[i][y].clear();
-                    return;
                 }
+                return;
             }
 
         } else
@@ -207,10 +215,9 @@ public class JavaKub extends JFrame implements ActionListener
                 for (int i = 0; i <= invHeight; i++)
                 {
                     myTilePanels[i][y].clear();
-                    return;
                 }
+                return;
             }
-            update(getGraphics());
         }
         JavaKub.getInstance().log("The argument you provided is not valid, argument found: " + y);
         throw new IllegalArgumentException("The argument you provided is not valid, argument found: " + y);
@@ -228,6 +235,10 @@ public class JavaKub extends JFrame implements ActionListener
         {
             isSwapping = true;
             swapBtn.setEnabled(false);
+        } else if (e.getSource() == resetBtn)
+        {
+            isSwapping = false;
+            swapBtn.setEnabled(true);
         } else if (e.getSource() == deleteBtn)
         {
             isDeleting = true;

@@ -189,11 +189,10 @@ public class TileDialog extends JFrame implements ActionListener
 
     private void addInvTile()
     {
-        if (getColor() == null)
+        if (getColorInv() == null)
             return;
-        javaKub.myTilePanels[x][y].setTile(new Tile(getColor(), ((Number) invNumber.getValue()).intValue(), x, y, isJoker.isSelected()));
+        javaKub.myTilePanels[x][y].setTile(new Tile(getColorInv(), ((Number) invNumber.getValue()).intValue(), x, y, isJoker.isSelected()));
         dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
-        javaKub.updateView();
     }
 
     private void addNormalGroup()
@@ -224,6 +223,23 @@ public class TileDialog extends JFrame implements ActionListener
     private Color getColor()
     {
         switch (colors[colorBox.getSelectedIndex()])
+        {
+            case "BLACK":
+                return Color.BLACK;
+            case "BLUE":
+                return Color.BLUE;
+            case "RED":
+                return Color.RED;
+            case "ORANGE":
+                return Color.ORANGE;
+            default:
+                return null;
+        }
+    }
+
+    private Color getColorInv()
+    {
+        switch (colors[invColorBox.getSelectedIndex()])
         {
             case "BLACK":
                 return Color.BLACK;

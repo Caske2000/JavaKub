@@ -12,16 +12,16 @@ import java.awt.*;
  */
 public class Display extends Canvas
 {
-    public void render(DefaultListModel model, JTileHolder[][] gameTilePanel, JTileHolder[][] myTilePanel)
+    public void render(DefaultListModel model, JTileHolder[][] gameTilePanel)
     {
+        JavaKub.getInstance().log("Checking groups...");
         model.clear();
         for (int y = 0; y < JavaKub.getInstance().boardHeight; y++)
         {
-            if (gameTilePanel[0][y].getTile() == null)
-                return;
             if (!Rules.checkValidGroup(gameTilePanel, y))
             {
-                JavaKub.getInstance().log("Tilegroup isn't valid!\n");
+                JavaKub.getInstance().log("Tilegroup isn't valid, clearing group...\n");
+                JavaKub.getInstance().clear(y, true);
             }
         }
     }
@@ -38,6 +38,7 @@ public class Display extends Canvas
             JavaKub.getInstance().gameTilePanels[endX][endY].setTile(startTile);
 
             JavaKub.getInstance().log(String.format("Tiles moved successfully, from %d:%d to %d:%d", startX, startY, endX, endY));
+            JavaKub.getInstance().updateView();
         }
     }
 }
